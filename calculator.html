@@ -1,7 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook&display=swap" rel="stylesheet">
+
 <title>Calculator</title>
 
 <style>
@@ -11,50 +15,64 @@ body {
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
+
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
+
+    margin: 0;
     font-family: monospace;
 }
 
+/* Main box */
 .calculator {
     background: #C5C5C5BF;
-    padding: 20px;
-    border-radius: 50px;
-    width: 460px;
+    padding: 15px;
+    border-radius: 30px;
+    width: 95vw;
+    max-width: 460px;
+    box-sizing: border-box;
 }
 
+/* Display */
 #display {
-    width: 99%;
-    height: 99px;
-    font-size: 30px;
+    width: 100%;
+    height: 80px;
+    font-size: clamp(24px, 5vw, 34px);
     text-align: center;
-    margin-bottom: 10px;
-    padding: 5px;
+    margin-bottom: 12px;
+    padding: 10px;
     background: #292729C7;
     color: #0D9184BF;
-    border-radius: 70px;
+    border-radius: 40px;
     cursor: not-allowed;
     font-family: "UnifrakturCook", cursive;
+    box-sizing: border-box;
 }
 
+/* Buttons grid */
 .buttons {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
+    gap: 12px;
 }
 
+/* Buttons */
 button {
-    height: 50px;
-    font-size: 18px;
+    height: 12vw;
+    max-height: 70px;
+    min-height: 50px;
+    font-size: 20px;
     background: #C5C5C5BF;
     color: #0D9184BF;
     border: 2px solid #0D9184BF;
     box-shadow: 0 0 5px #0D9184BF;
-    border-radius: 300px;
+    border-radius: 999px;
     cursor: pointer;
-	font-family: monospace;
+    font-family: monospace;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 button:hover {
@@ -65,16 +83,16 @@ button:hover {
     grid-column: span 2;
 }
 
+/* Footer */
 .footer {
     position: absolute;
-    bottom: 15px;
+    bottom: 10px;
     width: 100%;
     text-align: center;
-    font-size: 14px;
+    font-size: 12px;
     color: purple;
     text-shadow: 0 0 8px #0D9184BF;
-    font-family: monospace;
-    letter-spacing: 1.9px;
+    letter-spacing: 1.5px;
 }
 </style>
 </head>
@@ -103,7 +121,7 @@ button:hover {
         <button onclick="append('7')">7</button>
         <button onclick="append('8')">8</button>
         <button onclick="append('9')">9</button>
-        <button onclick="append('**')">^</button>
+        <button onclick="append('^')">^</button>
 
         <button onclick="append('0')" class="zero">0</button>
         <button onclick="append('.')">.</button>
@@ -125,12 +143,8 @@ function append(value) {
 }
 
 function clearDisplay() {
-    if (error) {
-        display.value = "mess is cleared (for now)";
-        error = false;
-    } else {
-        display.value = "";
-    }
+    display.value = "";
+    error = false;
 }
 
 function del() {
@@ -142,32 +156,46 @@ function calculate() {
     try {
         let expr = display.value;
 
-     
-        if (/\/\s*0(\D|$)/.test(expr)) {
+        if (!isValidExpression(expr)) throw "Invalid";
+
+        let result = safeEval(expr);
+
+        if (!isFinite(result)) {
             display.value = "LOL! Nice Try";
             error = true;
             return;
         }
 
-        display.value = eval(expr);
+        display.value = result;
     } catch {
         display.value = "Fuh Naw";
         error = true;
     }
 }
 
+function isValidExpression(expr) {
+    return /^[0-9+\-*/().\s^]+$/.test(expr);
+}
+
+function safeEval(expr) {
+    expr = expr.replace(/\^/g, "**");
+
+    if (/[^0-9+\-*/().\s*]/.test(expr)) throw "Nope";
+
+    return Function("return (" + expr + ")")();
+}
 
 document.addEventListener("keydown", function(e) {
     const key = e.key;
 
     if (key >= "0" && key <= "9") append(key);
     else if (["+", "-", "*", "/", "."].includes(key)) append(key);
+    else if (key === "^") append("^");
     else if (key === "Enter") calculate();
     else if (key === "Backspace") del();
     else if (key === "Escape") clearDisplay();
 });
 </script>
-
 
 </body>
 </html>
