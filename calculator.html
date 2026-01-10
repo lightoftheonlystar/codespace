@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturCook&display=swap" rel="stylesheet">
+<title>Calculator</title>
+
+<style>
+body {
+    background-image: url("https://wallpapers.com/images/file/white-aesthetic-background-8xxes6th6py0qgam.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: monospace;
+}
+
+.calculator {
+    background: #C5C5C5BF;
+    padding: 20px;
+    border-radius: 50px;
+    width: 460px;
+}
+
+#display {
+    width: 99%;
+    height: 99px;
+    font-size: 30px;
+    text-align: center;
+    margin-bottom: 10px;
+    padding: 5px;
+    background: #292729C7;
+    color: #0D9184BF;
+    border-radius: 70px;
+    cursor: not-allowed;
+    font-family: "UnifrakturCook", cursive;
+}
+
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+button {
+    height: 50px;
+    font-size: 18px;
+    background: #C5C5C5BF;
+    color: #0D9184BF;
+    border: 2px solid #0D9184BF;
+    box-shadow: 0 0 5px #0D9184BF;
+    border-radius: 300px;
+    cursor: pointer;
+	font-family: monospace;
+}
+
+button:hover {
+    background: #444;
+}
+
+.zero {
+    grid-column: span 2;
+}
+
+.footer {
+    position: absolute;
+    bottom: 15px;
+    width: 100%;
+    text-align: center;
+    font-size: 14px;
+    color: purple;
+    text-shadow: 0 0 8px #0D9184BF;
+    font-family: monospace;
+    letter-spacing: 1.9px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="calculator">
+    <input type="text" id="display" disabled>
+
+    <div class="buttons">
+        <button onclick="clearDisplay()">Clean</button>
+        <button onclick="del()">DEL</button>
+        <button onclick="append('/')">÷</button>
+        <button onclick="append('*')">×</button>
+
+        <button onclick="append('1')">1</button>
+        <button onclick="append('2')">2</button>
+        <button onclick="append('3')">3</button>
+        <button onclick="append('-')">−</button>
+
+        <button onclick="append('4')">4</button>
+        <button onclick="append('5')">5</button>
+        <button onclick="append('6')">6</button>
+        <button onclick="append('+')">+</button>
+
+        <button onclick="append('7')">7</button>
+        <button onclick="append('8')">8</button>
+        <button onclick="append('9')">9</button>
+        <button onclick="append('**')">^</button>
+
+        <button onclick="append('0')" class="zero">0</button>
+        <button onclick="append('.')">.</button>
+        <button onclick="calculate()">=</button>
+    </div>
+</div>
+
+<div class="footer">
+    © 2026 • Built by Atma
+</div>
+
+<script>
+let display = document.getElementById("display");
+let error = false;
+
+function append(value) {
+    if (error) return;
+    display.value += value;
+}
+
+function clearDisplay() {
+    if (error) {
+        display.value = "mess is cleared (for now)";
+        error = false;
+    } else {
+        display.value = "";
+    }
+}
+
+function del() {
+    if (error) return;
+    display.value = display.value.slice(0, -1);
+}
+
+function calculate() {
+    try {
+        let expr = display.value;
+
+     
+        if (/\/\s*0(\D|$)/.test(expr)) {
+            display.value = "LOL! Nice Try";
+            error = true;
+            return;
+        }
+
+        display.value = eval(expr);
+    } catch {
+        display.value = "Fuh Naw";
+        error = true;
+    }
+}
+
+
+document.addEventListener("keydown", function(e) {
+    const key = e.key;
+
+    if (key >= "0" && key <= "9") append(key);
+    else if (["+", "-", "*", "/", "."].includes(key)) append(key);
+    else if (key === "Enter") calculate();
+    else if (key === "Backspace") del();
+    else if (key === "Escape") clearDisplay();
+});
+</script>
+
+
+</body>
+</html>
