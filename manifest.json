@@ -1,0 +1,17 @@
+{
+  "name": "Atma Calculator",
+  "short_name": "Calculator",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#292729",
+  "theme_color": "#0D9184",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
