@@ -127,14 +127,41 @@
             .calculator { order: 1; margin-top: 10px; }
             .footer { position: relative; padding: 15px 0; }
         }
+	#clearHistory {
+    display: inline-block;
+    width: auto;
+    min-width: 60px;
+    padding: 4px 12px;
+    margin: 6px auto 10px auto;
+    background: #20A08DF2;
+    color: #000000F2;
+    border: 1px solid #000000F2;
+    border-radius: 999px;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: bold;
+}
+#clearHistory:hover {
+    background: #a33;
+    color: white;
+}
+
+
     </style>
 </head>
 <body>
 
 <div id="history">
     <b>History</b>
+
+    <div style="text-align:center;">
+        <button id="clearHistory">Clear</button>
+    </div>
+
     <div id="historyList"></div>
 </div>
+
+
 
 <div class="calculator">
     <input type="text" id="display" placeholder="0" readonly>
@@ -179,141 +206,146 @@
 <div class="footer">© 2026 • Designed by Atma</div>
 
 <script>
-    let display = document.getElementById("display");
-    let historyList = document.getElementById("historyList");
-    let historyData = [];
+let display = document.getElementById("display");
+let historyList = document.getElementById("historyList");
 
-    function append(v) {
-        display.value += v;
+
+let historyData = JSON.parse(localStorage.getItem("atmaHistory")) || [];
+renderHistory();
+
+
+
+function append(v) {
+    display.value += v;
+}
+
+function clearDisplay() {
+    display.value = "";
+}
+
+function del() {
+    let val = display.value;
+
+    if (/(sin\(|cos\(|tan\(|log\()$/.test(val)) {
+        display.value = val.slice(0, -4);
     }
+    else if (/(ln\(|√\()$/.test(val)) {
+        if (val.endsWith("ln(")) display.value = val.slice(0, -3);
+        else display.value = val.slice(0, -2);
+    }
+    else {
+        display.value = val.slice(0, -1);
+    }
+}
 
-    function clearDisplay() { display.value = ""; }
-    
-    function del() {
-        let val = display.value;
+
+
+function calculate() {
+    try {
+        let userExp = display.value;
+        if (!userExp) return;
+
         
-        
-        if (/(sin\(|cos\(|tan\(|log\()$/.test(val)) {
-             display.value = val.slice(0, -4);
-        } else if (/(ln\(|√\()$/.test(val)) {
-             
-             if (val.endsWith('ln(')) display.value = val.slice(0, -3);
-             else display.value = val.slice(0, -2);
-        } else {
-             display.value = val.slice(0, -1);
+        let open = (userExp.match(/\(/g) || []).length;
+        let close = (userExp.match(/\)/g) || []).length;
+        while (open > close) {
+            userExp += ")";
+            close++;
         }
+
+        let jsExp = userExp
+            .replace(/\^/g, "**")
+            .replace(/√/g, "Math.sqrt")
+            .replace(/log/g, "Math.log10")
+            .replace(/ln/g, "Math.log")
+            .replace(/sin/g, "Math.sin")
+            .replace(/cos/g, "Math.cos")
+            .replace(/tan/g, "Math.tan");
+
+        let result = safeEval(jsExp);
+
+        if (isNaN(result) || !isFinite(result)) throw "Math Error";
+
+        let formatted = Number.isInteger(result) ? result : parseFloat(result.toFixed(6));
+
+        addHistory(userExp, formatted);
+        display.value = formatted;
     }
-
-    function calculate() {
-        try {
-            let userExp = display.value;
-            if(!userExp) return;
-
-            let openParen = (userExp.match(/\(/g) || []).length;
-            let closeParen = (userExp.match(/\)/g) || []).length;
-            while(openParen > closeParen) {
-                userExp += ")";
-                closeParen++;
-            }
-
-            let jsExp = userExp
-                .replace(/\^/g, "**")          
-                .replace(/√/g, "Math.sqrt")    
-                .replace(/log/g, "Math.log10") 
-                .replace(/ln/g, "Math.log")    
-                .replace(/sin/g, "Math.sin")   
-                .replace(/cos/g, "Math.cos")   
-                .replace(/tan/g, "Math.tan"); 
-
-            let result = safeEval(jsExp);
-            
-            if (result === undefined || isNaN(result) || !isFinite(result)) throw "Skill Isuue!";
-            
-            let formattedRes = Number.isInteger(result) ? result : parseFloat(result.toFixed(5));
-            if (!isFinite(formattedRes)) throw "Math Error";
-
-            addHistory(userExp, formattedRes);
-            display.value = formattedRes;
-        } catch (e) {
-            let original = display.value;
-            display.value = "Fuh Naw!";
-            display.style.color = "#a33";
-            setTimeout(() => { 
-                display.value = original; 
-                display.style.color = "#0D9184";
-            }, 1500);
-        }
+    catch {
+        let old = display.value;
+        display.value = "Fuh Naw!";
+        display.style.color = "#a33";
+        setTimeout(() => {
+            display.value = old;
+            display.style.color = "#0D9184";
+        }, 1200);
     }
+}
 
-    function safeEval(expr) {
-        
-        if (!/^[0-9+\-*/().\sMathlognqurtsinco]+$/.test(expr)) {
-            throw "Skill Issue";
-        }
-        return Function("return (" + expr + ")")();
+
+function safeEval(expr) {
+    if (!/^[0-9+\-*/().\sMathlognqurtsinco]+$/.test(expr)) {
+        throw "Blocked";
     }
+    return Function("return (" + expr + ")")();
+}
 
-    function addHistory(exp, res) {
-        historyData.unshift(`${exp} = ${res}`);
-        if (historyData.length > 10) historyData.pop();
-        
-        historyList.innerHTML = "";
-        historyData.forEach(item => {
-            let div = document.createElement("div");
-            div.innerText = item;
-            div.onclick = () => {
-                let val = item.split("=")[1].trim();
-                display.value = val;
-            };
-            historyList.appendChild(div);
-        });
-    }
-	document.addEventListener("keydown", (e) => {
-    const key = e.key;
 
-    
-    if (key >= "0" && key <= "9") {
-        append(key);
-    }
 
-    
-    else if (["+", "-", "*", "/", ".", "^"].includes(key)) {
-        append(key);
-    }
+function addHistory(exp, res) {
+    historyData.unshift(`${exp} = ${res}`);
+    if (historyData.length > 10) historyData.pop();
+    saveAndRender();
+}
 
-    
-    else if (key === "(" || key === ")") {
-        append(key);
-    }
+function renderHistory() {
+    historyList.innerHTML = "";
+    historyData.forEach(item => {
+        let div = document.createElement("div");
+        div.textContent = item;
+        div.onclick = () => {
+            display.value = item.split("=")[1].trim();
+        };
+        historyList.appendChild(div);
+    });
+}
 
-    
-    else if (key === "Enter") {
-        e.preventDefault();
-        calculate();
-    }
+function saveAndRender() {
+    localStorage.setItem("atmaHistory", JSON.stringify(historyData));
+    renderHistory();
+}
 
-    
-    else if (key === "Backspace") {
-        del();
-    }
 
-    
-    else if (key === "Escape") {
-        clearDisplay();
-    }
+document.getElementById("clearHistory").onclick = () => {
+    historyData = [];
+    localStorage.removeItem("atmaHistory");
+    renderHistory();
+};
 
-    
-    else if (key === "s") append("sin(");
-    else if (key === "c") append("cos(");
-    else if (key === "t") append("tan(");
-    else if (key === "l") append("log(");
-    else if (key === "n") append("ln(");
+
+document.addEventListener("keydown", (e) => {
+    const k = e.key;
+
+    if (k >= "0" && k <= "9") append(k);
+    else if (["+", "-", "*", "/", ".", "^"].includes(k)) append(k);
+    else if (k === "(" || k === ")") append(k);
+    else if (k === "Enter") { e.preventDefault(); calculate(); }
+    else if (k === "Backspace") del();
+    else if (k === "Escape") clearDisplay();
+    else if (k === "s") append("sin(");
+    else if (k === "c") append("cos(");
+    else if (k === "t") append("tan(");
+    else if (k === "l") append("log(");
+    else if (k === "n") append("ln(");
 });
 
+
+
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js");
+    navigator.serviceWorker.register("sw.js");
 }
 </script>
+
 
 
 </body>
