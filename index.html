@@ -5,206 +5,316 @@
 <meta name="theme-color" content="#0D9184">
 <link rel="icon" href="icon.png">
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook&display=swap" rel="stylesheet">
+    <title>Atma Calculator Pro</title>
 
-<link href="https://fonts.googleapis.com/css2?family=UnifrakturCook&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-image: url("https://wallpapers.com/images/file/white-aesthetic-background-8xxes6th6py0qgam.jpg");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Courier New', Courier, monospace;
+        }
 
-<title>Calculator</title>
+        #history {
+            position: absolute;
+            left: 15px; top: 15px;
+            width: 220px;
+            max-height: 80vh;
+            overflow-y: auto;
+            background: rgba(41, 39, 41, 0.85);
+            color: #0D9184;
+            padding: 15px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border: 1px solid rgba(13, 145, 132, 0.3);
+            z-index: 10;
+        }
 
-<style>
-body {
-    background-image: url("https://wallpapers.com/images/file/white-aesthetic-background-8xxes6th6py0qgam.jpg");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+        #history b { display:block; text-align:center; margin-bottom:10px; border-bottom: 1px solid #0D9184; padding-bottom: 5px; }
 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+        #historyList div {
+            padding: 8px; margin-bottom: 8px;
+            background: #1f1f1f;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+        #historyList div:hover { background:#333; color: #fff; }
 
-    margin: 0;
-    font-family: monospace;
-}
+        .calculator {
+            background: rgba(197, 197, 197, 0.75);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 30px;
+            width: 90vw;
+            max-width: 400px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        }
 
-/* Main box */
-.calculator {
-    background: #C5C5C5BF;
-    padding: 15px;
-    border-radius: 30px;
-    width: 95vw;
-    max-width: 460px;
-    box-sizing: border-box;
-}
+        #display {
+            width: 100%;
+            height: 70px;
+            font-size: 32px;
+            text-align: right;
+            margin-bottom: 20px;
+            padding: 10px;
+            box-sizing: border-box;
+            background: #292729;
+            color: #0D9184;
+            border: none;
+            border-radius: 15px;
+            font-family: "UnifrakturCook", cursive;
+        }
 
-/* Display */
-#display {
-    width: 100%;
-    height: 80px;
-    font-size: clamp(24px, 5vw, 34px);
-    text-align: center;
-    margin-bottom: 12px;
-    padding: 10px;
-    background: #292729C7;
-    color: #0D9184BF;
-    border-radius: 40px;
-    cursor: not-allowed;
-    font-family: "UnifrakturCook", cursive;
-    box-sizing: border-box;
-}
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
 
-/* Buttons grid */
-.buttons {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-}
+        button {
+            height: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.5);
+            color: #0D9184;
+            border: 1px solid #0D9184;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
 
-/* Buttons */
-button {
-    height: 12vw;
-    max-height: 70px;
-    min-height: 50px;
-    font-size: 20px;
-    background: #C5C5C5BF;
-    color: #0D9184BF;
-    border: 2px solid #0D9184BF;
-    box-shadow: 0 0 5px #0D9184BF;
-    border-radius: 999px;
-    cursor: pointer;
-    font-family: monospace;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-}
+        button:hover {
+            background: #0D9184;
+            color: white;
+            transform: translateY(-2px);
+        }
+        button:active { transform: translateY(0); }
 
-button:hover {
-    background: #444;
-}
+        .operator { background: rgba(13, 145, 132, 0.15); font-weight: 900; }
+        .equals { background: #0D9184; color: white; grid-column: span 1; }
+        .zero { grid-column: span 2; }
+        .clear { color: #a33; border-color: #a33; background: rgba(170, 51, 51, 0.1); }
+        .clear:hover { background: #a33; color: white; }
 
-.zero {
-    grid-column: span 2;
-}
+        .footer {
+            position:absolute; bottom:10px; width:100%;
+            text-align:center; font-size:12px; color: #555; font-weight: bold;
+        }
 
-/* Footer */
-.footer {
-    position: absolute;
-    bottom: 10px;
-    width: 100%;
-    text-align: center;
-    font-size: 12px;
-    color: purple;
-    text-shadow: 0 0 8px #0D9184BF;
-    letter-spacing: 1.5px;
-}
-</style>
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column; justify-content: flex-start;
+                padding-top: 20px; height: auto; min-height: 100vh; overflow-y: auto;
+            }
+            #history {
+                position: relative; left: 0; top: 0;
+                width: 90vw; max-width: 400px; max-height: 200px;
+                margin-top: 20px; margin-bottom: 60px; order: 2;
+            }
+            .calculator { order: 1; margin-top: 10px; }
+            .footer { position: relative; padding: 15px 0; }
+        }
+    </style>
 </head>
-
 <body>
 
+<div id="history">
+    <b>History</b>
+    <div id="historyList"></div>
+</div>
+
 <div class="calculator">
-    <input type="text" id="display" disabled>
+    <input type="text" id="display" placeholder="0" readonly>
 
     <div class="buttons">
-        <button onclick="clearDisplay()">Clean</button>
-        <button onclick="del()">DEL</button>
-        <button onclick="append('/')">÷</button>
-        <button onclick="append('*')">×</button>
+        <button onclick="clearDisplay()" class="clear">C</button>
+        <button onclick="del()" class="clear">DEL</button>
+        <button onclick="append('/')" class="operator">÷</button>
+        <button onclick="append('*')" class="operator">×</button>
 
-        <button onclick="append('1')">1</button>
-        <button onclick="append('2')">2</button>
-        <button onclick="append('3')">3</button>
-        <button onclick="append('-')">−</button>
+        <button onclick="append('sin(')">sin</button>
+        <button onclick="append('cos(')">cos</button>
+        <button onclick="append('tan(')">tan</button>
+        <button onclick="append('√(')">√</button>
 
-        <button onclick="append('4')">4</button>
-        <button onclick="append('5')">5</button>
-        <button onclick="append('6')">6</button>
-        <button onclick="append('+')">+</button>
+        <button onclick="append('log(')">log</button>
+        <button onclick="append('ln(')">ln</button>
+        <button onclick="append('(')" class="operator">(</button>
+        <button onclick="append(')')" class="operator">)</button>
 
         <button onclick="append('7')">7</button>
         <button onclick="append('8')">8</button>
         <button onclick="append('9')">9</button>
-        <button onclick="append('^')">^</button>
+        <button onclick="append('^')" class="operator">^</button>
+
+        <button onclick="append('4')">4</button>
+        <button onclick="append('5')">5</button>
+        <button onclick="append('6')">6</button>
+        <button onclick="append('-')" class="operator">−</button>
+
+        <button onclick="append('1')">1</button>
+        <button onclick="append('2')">2</button>
+        <button onclick="append('3')">3</button>
+        <button onclick="append('+')" class="operator">+</button>
 
         <button onclick="append('0')" class="zero">0</button>
         <button onclick="append('.')">.</button>
-        <button onclick="calculate()">=</button>
+        <button onclick="calculate()" class="equals">=</button>
     </div>
 </div>
 
-<div class="footer">
-    © 2026 • Built by Atma
-</div>
+<div class="footer">© 2026 • Designed by Atma</div>
 
 <script>
-let display = document.getElementById("display");
-let error = false;
+    let display = document.getElementById("display");
+    let historyList = document.getElementById("historyList");
+    let historyData = [];
 
-function append(value) {
-    if (error) return;
-    display.value += value;
-}
-
-function clearDisplay() {
-    display.value = "";
-    error = false;
-}
-
-function del() {
-    if (error) return;
-    display.value = display.value.slice(0, -1);
-}
-
-function calculate() {
-    try {
-        let expr = display.value;
-
-        if (!isValidExpression(expr)) throw "Invalid";
-
-        let result = safeEval(expr);
-
-        if (!isFinite(result)) {
-            display.value = "LOL! Nice Try";
-            error = true;
-            return;
-        }
-
-        display.value = result;
-    } catch {
-        display.value = "Fuh Naw";
-        error = true;
+    function append(v) {
+        display.value += v;
     }
-}
 
-function isValidExpression(expr) {
-    return /^[0-9+\-*/().\s^]+$/.test(expr);
-}
+    function clearDisplay() { display.value = ""; }
+    
+    function del() {
+        let val = display.value;
+        
+        
+        if (/(sin\(|cos\(|tan\(|log\()$/.test(val)) {
+             display.value = val.slice(0, -4);
+        } else if (/(ln\(|√\()$/.test(val)) {
+             
+             if (val.endsWith('ln(')) display.value = val.slice(0, -3);
+             else display.value = val.slice(0, -2);
+        } else {
+             display.value = val.slice(0, -1);
+        }
+    }
 
-function safeEval(expr) {
-    expr = expr.replace(/\^/g, "**");
+    function calculate() {
+        try {
+            let userExp = display.value;
+            if(!userExp) return;
 
-    if (/[^0-9+\-*/().\s*]/.test(expr)) throw "Nope";
+            let openParen = (userExp.match(/\(/g) || []).length;
+            let closeParen = (userExp.match(/\)/g) || []).length;
+            while(openParen > closeParen) {
+                userExp += ")";
+                closeParen++;
+            }
 
-    return Function("return (" + expr + ")")();
-}
+            let jsExp = userExp
+                .replace(/\^/g, "**")          
+                .replace(/√/g, "Math.sqrt")    
+                .replace(/log/g, "Math.log10") 
+                .replace(/ln/g, "Math.log")    
+                .replace(/sin/g, "Math.sin")   
+                .replace(/cos/g, "Math.cos")   
+                .replace(/tan/g, "Math.tan"); 
 
-document.addEventListener("keydown", function(e) {
+            let result = safeEval(jsExp);
+            
+            if (result === undefined || isNaN(result) || !isFinite(result)) throw "Skill Isuue!";
+            
+            let formattedRes = Number.isInteger(result) ? result : parseFloat(result.toFixed(5));
+            if (!isFinite(formattedRes)) throw "Math Error";
+
+            addHistory(userExp, formattedRes);
+            display.value = formattedRes;
+        } catch (e) {
+            let original = display.value;
+            display.value = "Fuh Naw!";
+            display.style.color = "#a33";
+            setTimeout(() => { 
+                display.value = original; 
+                display.style.color = "#0D9184";
+            }, 1500);
+        }
+    }
+
+    function safeEval(expr) {
+        
+        if (!/^[0-9+\-*/().\sMathlognqurtsinco]+$/.test(expr)) {
+            throw "Skill Issue";
+        }
+        return Function("return (" + expr + ")")();
+    }
+
+    function addHistory(exp, res) {
+        historyData.unshift(`${exp} = ${res}`);
+        if (historyData.length > 10) historyData.pop();
+        
+        historyList.innerHTML = "";
+        historyData.forEach(item => {
+            let div = document.createElement("div");
+            div.innerText = item;
+            div.onclick = () => {
+                let val = item.split("=")[1].trim();
+                display.value = val;
+            };
+            historyList.appendChild(div);
+        });
+    }
+	document.addEventListener("keydown", (e) => {
     const key = e.key;
 
-    if (key >= "0" && key <= "9") append(key);
-    else if (["+", "-", "*", "/", "."].includes(key)) append(key);
-    else if (key === "^") append("^");
-    else if (key === "Enter") calculate();
-    else if (key === "Backspace") del();
-    else if (key === "Escape") clearDisplay();
+    
+    if (key >= "0" && key <= "9") {
+        append(key);
+    }
+
+    
+    else if (["+", "-", "*", "/", ".", "^"].includes(key)) {
+        append(key);
+    }
+
+    
+    else if (key === "(" || key === ")") {
+        append(key);
+    }
+
+    
+    else if (key === "Enter") {
+        e.preventDefault();
+        calculate();
+    }
+
+    
+    else if (key === "Backspace") {
+        del();
+    }
+
+    
+    else if (key === "Escape") {
+        clearDisplay();
+    }
+
+    
+    else if (key === "s") append("sin(");
+    else if (key === "c") append("cos(");
+    else if (key === "t") append("tan(");
+    else if (key === "l") append("log(");
+    else if (key === "n") append("ln(");
 });
-    if ("serviceWorker" in navigator) {
+
+if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js");
 }
-
 </script>
+
 
 </body>
 </html>
-
